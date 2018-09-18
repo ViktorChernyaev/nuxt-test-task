@@ -1,12 +1,14 @@
-export const SORT_TYPE_AZ = 1;
-export const SORT_TYPE_ZA = -1;
+export const SORT_TYPE_AZ = 0
+export const SORT_TYPE_ZA = 1;
 
 export function parametrizeItems(items, { filters, sort }) {
   if (filters.length || sort.length) {
     const filtered = items.filter(item => {
-      const currentFilter = filters.find(filter => item[filter.name] || item[filter.name] === 0);
+      const currentFilter = filters.find(filter => filter.name === item[filter.name]);
+      console.log(filters, item)
       if (currentFilter) {
-        const val = item[currentFilter.name]
+        // console.log(currentFilter, item)
+        const val = item[currentFilter.name];
         if (typeof val === "string") {
           const lowerVal = val.toLowerCase();
           const lowerCurrent = currentFilter.value.toLowerCase();
@@ -18,8 +20,8 @@ export function parametrizeItems(items, { filters, sort }) {
     });
     const sortname = sort.length ? sort[0].name : null
     return !sortname ? filtered : filtered.sort((a, b) => {
-      if(a[sortname] < b[sortname]) return sort[0].value;
-      if(a[sortname] > b[sortname]) return sort[0].value;
+      if(a[sortname] < b[sortname]) return sort[0].value === SORT_TYPE_AZ ? -1 : 1;
+      if(a[sortname] > b[sortname]) return sort[0].value === SORT_TYPE_ZA ? -1 : 1;
       return 0;
     });
   }
@@ -32,24 +34,21 @@ export function mergeFilter(prevFilters, nextFilter) {
     if (filterPresents && (nextFilter.value === 0 || nextFilter.value)) {
       return prevFilters.map(filter => filter.name === nextFilter.name ? nextFilter : filter);
     } else if (filterPresents) {
-      return prevFilter.filter(filter => filter.name !== nextFilter.name);
+      return prevFilters.filter(filter => filter.name !== nextFilter.name);
     }
     prevFilters.push(nextFilter);
   }
   return prevFilters;
 }
 
-export function mergeSort(prevSorts, nextSort) {
-  const azSort = { name: nextSort, value: SORT_TYPE_AZ };
-  if (nextSort) {
-    if (prevSorts.length) {
-      const current = prevSorts[0];
-      if (current.name === nextSort) {
-        return current.value === SORT_TYPE_ZA ? [] : [azSort];
-      }
-      return [azSort];
+export function mergeSort([current], name) {
+  if (name) {
+    const azSort = { name, value: SORT_TYPE_AZ };
+    const zaSort = { name, value: SORT_TYPE_ZA };
+    if (current.name === name) {
+      return current.value === SORT_TYPE_AZ ? [zaSort] : [azSort];
     }
-    prevSorts.push(azSort);
+    return [azSort];
   }
-  return prevSorts;
+  return [current];
 }

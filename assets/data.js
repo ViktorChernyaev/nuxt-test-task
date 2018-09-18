@@ -14,11 +14,11 @@ export const books = [
 export const genres = books.reduce((acc, book) => {
   book.genres.forEach(genre => acc.includes(genre) ? null : acc.push(genre));
   return acc;
-}, []).map((label, value) => ({ label, value }));
+}, []);
 
 export const columns = [
-  { label: "Номер", name: "id" },
-  { label: "Название", name: "title" },
-  { label: "Автор", name: "author" },
-  { label: "Жанры", name: "genres" },
+  { label: "Номер", type: "number", name: "id" },
+  { label: "Название", type: "text", name: "title" },
+  { label: "Автор", type: "text", name: "author" },
+  { label: "Жанры", type: "select", name: "genres" },
 ];

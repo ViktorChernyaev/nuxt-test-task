@@ -1,28 +1,46 @@
 <template>
   <section class="p-panel">
     <h1 class="p-panel__title">Список Книг</h1>
+    <div v-for="filter in filters" class="books-filters" :key="filter.name">
+      <input
+        type="text"
+        :placeholder="filter.label"
+        :name="filter.name"
+        :value="filter.value"
+        @keyup="(e) => changeFilter(e, filter)"
+      />
+    </div>
     <table class="books-table">
-      <tr class="books-table__row">
-        <th
-          v-for="td in columns"
-          v-bind:key="td.name"
-          class="books-table__td books-table__th"
-        >
-          {{td.label}}
-        </th>
-      </tr>
-      <tr v-for="book in books" v-bind:key="book.id" class="books-table__tr">
-        <td class="books-table__td">{{book.id}}</td>
-        <td class="books-table__td">{{book.title}}</td>
-        <td class="books-table__td">{{book.author}}</td>
-        <td class="books-table__td">{{book.genres.join(",")}}</td>
-      </tr>
+      <thead>
+        <tr class="books-table__row">
+          <th
+            v-for="td in columns"
+            :key="td.name"
+            class="books-table__td books-table__th"
+          >
+            {{td.label}}
+            <div
+              class="books-table__sort-icon"
+              :class="td.cname"
+              @click="changeSort(td)"
+            />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="book in books" :key="book.id" class="books-table__tr">
+          <td class="books-table__td">{{book.id}}</td>
+          <td class="books-table__td">{{book.title}}</td>
+          <td class="books-table__td">{{book.author}}</td>
+          <td class="books-table__td">{{book.genres.join(", ")}}</td>
+        </tr>
+      </tbody>
     </table>
   </section>
 </template>
 
 <script>
-import { parametrizeItems } from "assets/helpers/filter";
+import { parametrizeItems, mergeSort, SORT_TYPE_AZ, SORT_TYPE_ZA } from "assets/helpers/filter";
 import { genres, columns } from "assets/data";
 
 export default {
@@ -31,7 +49,38 @@ export default {
       return parametrizeItems(this.$store.state.books.items, this.$store.state.books.params)
     },
     genres () { return genres },
-    columns () { return columns }
+    columns () {
+      return columns.map((item, i) => {
+        const { name, value } = this.$store.state.books.params.sort[0];
+        const cname = {
+          "books-table__sort-icon--def": name !== item.name,
+          "books-table__sort-icon--az": name === item.name && value === SORT_TYPE_AZ,
+          "books-table__sort-icon--za": name === item.name && value === SORT_TYPE_ZA
+        };
+        return { ...item, cname };
+      });
+    },
+    filters () {
+      return columns.map(item => {
+        const { filters } = this.$store.state.books.params;
+        const filter = filters.find(filter => filter.name === item.name);
+        item.value = (filter && filter.value) ? filter.value : "";
+        return item;
+      })
+    }
+  },
+  methods: {
+    changeSort(item) {
+      this.$store.commit("books/mergeParams", { sort: item.name });
+    },
+    changeFilter(e, item) {
+      const { name, value } = e.target;
+      const prevFilter = this.$store.state.books.params.filters.find(filter => filter.name === name);
+      const isDelete = prevFilter && prevFilter.value.length && value === ""
+      if (isDelete || value.length) {
+        this.$store.commit("books/mergeParams", { filters: { name, value }});
+      }
+    }
   }
 }
 </script>
