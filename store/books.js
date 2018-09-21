@@ -9,6 +9,8 @@ export const state = () => ({
   }
 });
 
+export const strict = false;
+
 export const mutations = {
   mergeParams (state, { filters, sort }) {
     state.params.filters = mergeFilter(state.params.filters, filters);

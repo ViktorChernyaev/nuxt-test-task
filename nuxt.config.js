@@ -34,6 +34,7 @@ module.exports = {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    { src: '~/plugins/vue-select', ssr: false }
   ],
 
   /*
@@ -59,6 +60,7 @@ module.exports = {
           exclude: /(node_modules)/
         })
       }
-    }
+    },
+    vendor: ['vue-select']
   }
 }

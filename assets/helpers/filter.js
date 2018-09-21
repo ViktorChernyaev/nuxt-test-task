@@ -4,19 +4,25 @@ export const SORT_TYPE_ZA = 1;
 export function parametrizeItems(items, { filters, sort }) {
   if (filters.length || sort.length) {
     const filtered = items.filter(item => {
-      const currentFilter = filters.find(filter => filter.name === item[filter.name]);
-      console.log(filters, item)
-      if (currentFilter) {
-        // console.log(currentFilter, item)
-        const val = item[currentFilter.name];
+      return filters.reduce((acc, filter) => {
+        const val = item[filter.name];
         if (typeof val === "string") {
-          const lowerVal = val.toLowerCase();
-          const lowerCurrent = currentFilter.value.toLowerCase();
-          return lowerVal === lowerCurrent || lowerVal.includes(lowerCurrent);
+          return val.toLowerCase().includes(filter.value.toLowerCase()) ? acc : false
+        } else if (typeof val === "number") {
+          return (val === filter.value) ? acc : false;
+        } else if (Array.isArray(val)) {
+          const inputTags = filter.value;
+          if (inputTags.length > 1) {
+            return val.filter(valItem => {
+              return inputTags.find(inputTag => inputTag.toLowerCase() === valItem.toLowerCase());
+            }).length === inputTags.length;
+          } else if (inputTags.length === 1) {
+            return val.find(valItem => valItem.toLowerCase() === filter.value[0].toLowerCase()) ? acc : false;
+          }
+          return acc;
         }
-        return val === currentFilter.value;
-      }
-      return true;
+        return false;
+      }, true);
     });
     const sortname = sort.length ? sort[0].name : null
     return !sortname ? filtered : filtered.sort((a, b) => {

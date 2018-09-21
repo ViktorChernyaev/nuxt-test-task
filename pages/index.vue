@@ -1,14 +1,24 @@
 <template>
   <section class="p-panel">
     <h1 class="p-panel__title">Список Книг</h1>
-    <div v-for="filter in filters" class="books-filters" :key="filter.name">
-      <input
-        type="text"
-        :placeholder="filter.label"
-        :name="filter.name"
-        :value="filter.value"
-        @keyup="(e) => changeFilter(e, filter)"
-      />
+    <div class="books-filters">
+      <div v-for="filter in filters" class="books-filters__item" :key="filter.name">
+        <v-select
+          v-if="filter.type === 'select'"
+          multiple
+          :options="genres"
+          :value="filter.value"
+          @input="(value) => changeFilter(value, filter)"
+        ></v-select>
+        <input
+          v-else
+          :type="filter.type"
+          :placeholder="filter.label"
+          :name="filter.name"
+          :value="filter.value"
+          @keyup="(e) => changeFilter(e, filter)"
+        />
+      </div>
     </div>
     <table class="books-table">
       <thead>
@@ -64,7 +74,7 @@ export default {
       return columns.map(item => {
         const { filters } = this.$store.state.books.params;
         const filter = filters.find(filter => filter.name === item.name);
-        item.value = (filter && filter.value) ? filter.value : "";
+        item.value = (filter && (filter.value || filter.value === 0)) ? filter.value : "";
         return item;
       })
     }
@@ -74,11 +84,16 @@ export default {
       this.$store.commit("books/mergeParams", { sort: item.name });
     },
     changeFilter(e, item) {
-      const { name, value } = e.target;
-      const prevFilter = this.$store.state.books.params.filters.find(filter => filter.name === name);
-      const isDelete = prevFilter && prevFilter.value.length && value === ""
-      if (isDelete || value.length) {
-        this.$store.commit("books/mergeParams", { filters: { name, value }});
+      console.log(e)
+      let { value, type } = e && e.target ? e.target : { value: e, type: "select" };
+      const prevFilter = this.$store.state.books.params.filters.find(filter => filter.name === item.name);
+      const isDelete = prevFilter && prevFilter.value.length && value === "";
+      if (type === "number") {
+        value = parseInt(value);
+      }
+      console.log({ name: item.name, value })
+      if (isDelete || value.length || (typeof value === "number")) {
+        this.$store.commit("books/mergeParams", { filters: { name: item.name, value }});
       }
     }
   }

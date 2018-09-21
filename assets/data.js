@@ -17,8 +17,8 @@ export const genres = books.reduce((acc, book) => {
 }, []);
 
 export const columns = [
-  { label: "Номер", type: "number", name: "id" },
-  { label: "Название", type: "text", name: "title" },
-  { label: "Автор", type: "text", name: "author" },
-  { label: "Жанры", type: "select", name: "genres" },
+  { label: "Номер", type: "number", name: "id", type: "number" },
+  { label: "Название", type: "text", name: "title", type: "text" },
+  { label: "Автор", type: "text", name: "author", type: "text" },
+  { label: "Жанры", type: "select", name: "genres", type: "select" },
 ];
